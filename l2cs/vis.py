@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import math
+import winsound
 from .results import GazeResultContainer
 from .moller2 import *
 
@@ -91,6 +92,11 @@ def draw_vector(image, yaw, pitch, length=100, thickness=2, color=(0, 255, 0)):
     
     return image
 
+def playBeep():
+    frequency = 2600  # Set Frequency To 2500 Hertz
+    duration = 200  # Set Duration To 1000 ms == 1 second
+    winsound.Beep(frequency, duration)
+
 def renderPoint(frame: np.ndarray, results: GazeResultContainer):
 
     # gaze do draw calcultions and variables
@@ -153,14 +159,21 @@ def renderPoint(frame: np.ndarray, results: GazeResultContainer):
 
         # screen = [ Vec3(-1, -1, 0), Vec3(-1, 1, 0), Vec3(1, -1, 0),
         #          Vec3(1, 1, 0), Vec3(1, -1, 0), Vec3(-1, 1, 0)]
-         
-        screen = [ Vec3(1.000000, 1.000000, 1.000000), Vec3(-1.000000, -1.000000, 1.000000), Vec3(1.000000, -1.000000, 1.000000),
-                  Vec3(1.000000, 1.000000, 1.000000), Vec3(-1.000000, 1.000000, 1.000000), Vec3(-1.000000, -1.000000, 1.000000)] 
+        # UNITS SEEMS TO BE 2 = 40 cm
+
+        # CAMERA ON THE CENTER OF THE SCREEN (20 cm x 20cm)
+        # screen = [ Vec3(0.200000, 0.200000, 1.000000), Vec3(-0.200000, -0.200000, 1.000000), Vec3(0.200000, -0.200000, 1.000000),
+        #           Vec3(0.200000, 0.200000, 1.000000), Vec3(-0.200000, 0.200000, 1.000000), Vec3(-0.200000, -0.200000, 1.000000)] 
+        
+        # CAMERA ON TOP OF lg house screen (60 cm x 40cm)
+        screen = [ Vec3(0.300000, 0.000000, 1.000000), Vec3(-0.300000, -0.400000, 1.000000), Vec3(0.300000, -0.400000, 1.000000),
+                  Vec3(0.300000, 0.000000, 1.000000), Vec3(-0.300000, 0.000000, 1.000000), Vec3(-0.300000, -0.400000, 1.000000)] 
 
         # tuples = rays_triangles_intersection(np.array([0, 0, 1]), np.array(dv), np.array(screen))
 
         r = Ray()
-        r.orig = Vec3(0, 0, 10)
+        # TODO. It is necessary to add the user head coordinates here 
+        r.orig = Vec3(0, -0.15, 2)   #(subject is 1 meter front the screen)
         r.direction = Vec3(dv[2], dv[1], -1)
         # print (r.direction)
         t = ray_triangle_intersect(r, screen[0],
@@ -171,9 +184,11 @@ def renderPoint(frame: np.ndarray, results: GazeResultContainer):
                                       screen[5])
 
         if t >= 0: 
-            print ("hit")        
+            print ("hit") 
+            playBeep()       
         if t2 >= 0: 
             print ("hit")
+            playBeep()
         # print (math.degrees(results.yaw[i]),math.degrees(results.pitch[i]))
         # frame = draw_vector(frame, results.yaw[i], results.pitch[i])
         # frame = render_3d_vector(frame, [int(image_width/2),int(image_height/2),0], dv, 50)
