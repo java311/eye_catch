@@ -23,7 +23,7 @@ CWD = pathlib.Path.cwd()
 def parse_args():
     """Parse input arguments."""
     parser = argparse.ArgumentParser(
-        description='Gaze evalution using model pretrained with L2CS-Net on Gaze360.')
+        description='Gaze evaluation using model pretrained with L2CS-Net on Gaze360.')
     parser.add_argument(
         '--device',dest='device', help='Device to run model: cpu or gpu:0',
         default="gpu", type=str)
@@ -35,7 +35,7 @@ def parse_args():
         default=0, type=int)
     parser.add_argument(
         '--arch',dest='arch',help='Network architecture, can be: ResNet18, ResNet34, ResNet50, ResNet101, ResNet152',
-        default='ResNet50', type=str)
+        default='ResNet50', type=str) #default ResNet50
 
     args = parser.parse_args()
     return args
@@ -54,6 +54,7 @@ if __name__ == '__main__':
         device = select_device(args.device, batch_size=1)
     )
      
+    cam = "D:\\tmp\\chuou_rinkan_videos\\station_entrance.mp4"
     cap = cv2.VideoCapture(cam)
 
     # Check if the webcam is opened correctly

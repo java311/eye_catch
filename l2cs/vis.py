@@ -23,7 +23,7 @@ def draw_gaze(a,b,c,d,image_in, pitchyaw, thickness=2, color=(255, 255, 0),sclae
                    thickness, cv2.LINE_AA, tipLength=0.18)
     return image_out
 
-def draw_bbox(frame: np.ndarray, bbox: np.ndarray):
+def draw_bbox(frame: np.ndarray, bbox: np.ndarray, color: tuple):
     
     x_min=int(bbox[0])
     if x_min < 0:
@@ -34,7 +34,7 @@ def draw_bbox(frame: np.ndarray, bbox: np.ndarray):
     x_max=int(bbox[2])
     y_max=int(bbox[3])
 
-    cv2.rectangle(frame, (x_min, y_min), (x_max, y_max), (0,255,0), 1)
+    cv2.rectangle(frame, (x_min, y_min), (x_max, y_max), color, 1)
 
     return frame
 
@@ -109,10 +109,6 @@ def renderPoint(frame: np.ndarray, results: GazeResultContainer):
         ("bottom_right", (int(image_width / 2), int(image_height / 2), image_width, image_height)),
     ]
 
-    # Draw bounding boxes
-    for bbox in results.bboxes:
-        frame = draw_bbox(frame, bbox)
-
     # Draw Gaze
     for i in range(results.pitch.shape[0]):
 
@@ -185,12 +181,20 @@ def renderPoint(frame: np.ndarray, results: GazeResultContainer):
 
         if t >= 0: 
             print ("hit") 
-            playBeep()       
+            playBeep()     
+            results.color[i] = (255,0,0) 
         if t2 >= 0: 
             print ("hit")
             playBeep()
+            results.color[i] = (255,0,0)
         # print (math.degrees(results.yaw[i]),math.degrees(results.pitch[i]))
         # frame = draw_vector(frame, results.yaw[i], results.pitch[i])
         # frame = render_3d_vector(frame, [int(image_width/2),int(image_height/2),0], dv, 50)
+
+    # Draw bounding boxes
+    index = 0
+    for bbox in results.bboxes:
+        frame = draw_bbox(frame, bbox, results.color[index])
+        index = index + 1 
 
     return frame

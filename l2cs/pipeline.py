@@ -54,6 +54,7 @@ class Pipeline:
         bboxes = []
         landmarks = []
         scores = []
+        color = []
 
         if self.include_detector:
             faces = self.detector(frame)
@@ -85,6 +86,7 @@ class Pipeline:
                     bboxes.append(box)
                     landmarks.append(landmark)
                     scores.append(score)
+                    color.append( (0,255,0) )
 
                 # Predict gaze
                 # print(str(int(face_imgs["x"] - face_imgs["width"] / 2)))
@@ -107,7 +109,8 @@ class Pipeline:
                 yaw=yaw,
                 bboxes=np.stack(bboxes),
                 landmarks=np.stack(landmarks),
-                scores=np.stack(scores)
+                scores=np.stack(scores),
+                color=color
             )
         else:
             results = GazeResultContainer(
@@ -115,7 +118,8 @@ class Pipeline:
                 yaw=yaw,
                 bboxes= [],
                 landmarks= [],
-                scores= []
+                scores= [],
+                color=color
             )
 
         return results
