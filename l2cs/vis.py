@@ -1,5 +1,7 @@
 import cv2
 import numpy as np
+import os
+import json
 import math
 import winsound
 from .results import GazeResultContainer
@@ -8,7 +10,7 @@ from .moller2 import *
 DISTANCE_TO_OBJECT = 1000  # mm
 HEIGHT_OF_HUMAN_FACE = 250  # mm
 
-def draw_gaze(a,b,c,d,image_in, pitchyaw, thickness=2, color=(255, 255, 0),sclae=2.0):
+def draw_gaze(a,b,c,d,image_in, pitchyaw, thickness=2, color=(0, 0, 255),sclae=2.0):
     """Draw gaze angle on given image with a given eye positions."""
     image_out = image_in
     (h, w) = image_in.shape[:2]
@@ -38,7 +40,9 @@ def draw_bbox(frame: np.ndarray, bbox: np.ndarray, color: tuple):
 
     return frame
 
-def render(frame: np.ndarray, results: GazeResultContainer):
+def render(frame: np.ndarray, results: GazeResultContainer, filePath: str):
+
+    savePoint(frame, results, filePath)
 
     return renderPoint(frame, results)
 
@@ -70,6 +74,30 @@ def render(frame: np.ndarray, results: GazeResultContainer):
     #     draw_gaze(x_min,y_min,bbox_width, bbox_height,frame,(pitch,yaw),color=(0,0,255))
 
     # return frame
+
+def savePoint(frame: np.ndarray, results: GazeResultContainer, filePath: str):
+    
+    # save into tmp file
+    # with open(filePath, 'w', encoding='utf-8') as f:
+    #     json.dump(results.to_json(), f, ensure_ascii=True, indent=4)
+    
+    cdir = os.getcwd()
+    fpath =  os.path.join(cdir, filePath)
+
+    a = []
+    if os.path.isfile(fpath) == False:
+        a.append(results.to_json())
+        with open(fpath, mode='w') as f:
+            f.write(json.dumps(a, indent=2))
+    else:
+        with open(fpath) as feedsjson:
+            feeds = json.load(feedsjson)
+
+        feeds.append(results.to_json())
+        with open(fpath, mode='w') as f:
+            f.write(json.dumps(feeds, indent=2))
+
+    return frame
 
 def yaw_pitch_to_vector(yaw, pitch):
     x = math.cos(yaw) * math.cos(pitch)
@@ -115,6 +143,7 @@ def renderPoint(frame: np.ndarray, results: GazeResultContainer):
         bbox = results.bboxes[i]
         pitch = results.pitch[i]
         yaw = results.yaw[i]
+        results.color[i] = (255,0,0)
         
         # Extract safe min and max of x,y
         x_min=int(bbox[0])
@@ -130,7 +159,7 @@ def renderPoint(frame: np.ndarray, results: GazeResultContainer):
         bbox_width = x_max - x_min
         bbox_height = y_max - y_min
 
-        draw_gaze(x_min,y_min,bbox_width, bbox_height,frame,(pitch,yaw),color=(0,0,255))
+        draw_gaze(x_min,y_min,bbox_width, bbox_height,frame,(pitch,yaw),color=(255,0,0))
 
         # THIS CODE WORKS DO NOT DELETE IT !!!!!!!!!!!
         # draw a red circle on the screen (depend on the user looking spot)
@@ -182,11 +211,11 @@ def renderPoint(frame: np.ndarray, results: GazeResultContainer):
         if t >= 0: 
             print ("hit") 
             playBeep()     
-            results.color[i] = (255,0,0) 
+            results.color[i] = (0,255,0) 
         if t2 >= 0: 
             print ("hit")
             playBeep()
-            results.color[i] = (255,0,0)
+            results.color[i] = (0,255,0)
         # print (math.degrees(results.yaw[i]),math.degrees(results.pitch[i]))
         # frame = draw_vector(frame, results.yaw[i], results.pitch[i])
         # frame = render_3d_vector(frame, [int(image_width/2),int(image_height/2),0], dv, 50)

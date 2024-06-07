@@ -54,7 +54,7 @@ if __name__ == '__main__':
         device = select_device(args.device, batch_size=1)
     )
      
-    cam = "D:\\tmp\\chuou_rinkan_videos\\station_entrance.mp4"
+    # cam = "D:\\tmp\\chuou_rinkan_videos\\station_entrance.mp4"
     cap = cv2.VideoCapture(cam)
 
     # Check if the webcam is opened correctly
@@ -76,7 +76,8 @@ if __name__ == '__main__':
             results = gaze_pipeline.step(frame)
 
             # Visualize output
-            frame = render(frame, results) 
+            frame = render(frame, results, "l2cs_tmp.json") 
+            # frame = render(frame, results) 
             # frame = renderPoint(frame, results)
            
             myFPS = 1.0 / (time.time() - start_fps)
