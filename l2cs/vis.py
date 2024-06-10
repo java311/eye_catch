@@ -40,9 +40,7 @@ def draw_bbox(frame: np.ndarray, bbox: np.ndarray, color: tuple):
 
     return frame
 
-def render(frame: np.ndarray, results: GazeResultContainer, filePath: str):
-
-    savePoint(frame, results, filePath)
+def render(frame: np.ndarray, results: GazeResultContainer):
 
     return renderPoint(frame, results)
 
@@ -98,6 +96,51 @@ def savePoint(frame: np.ndarray, results: GazeResultContainer, filePath: str):
             f.write(json.dumps(feeds, indent=2))
 
     return frame
+
+def transform_property(entry):
+    """
+    Transforms each property of the JSON entry into the desired format.
+    """
+    transformed_entry = {}
+    
+    # Transform 'pitch' to a numpy array
+    if 'pitch' in entry:
+        transformed_entry['pitch'] = np.array(entry['pitch'])
+    
+    # Transform 'yaw' to a numpy array
+    if 'yaw' in entry:
+        transformed_entry['yaw'] = np.array(entry['yaw'])
+    
+    # Transform 'bboxes' to a numpy array
+    if 'bboxes' in entry:
+        transformed_entry['bboxes'] = np.array(entry['bboxes'])
+    
+    # Transform 'landmarks' to a numpy array
+    if 'landmarks' in entry:
+        transformed_entry['landmarks'] = np.array(entry['landmarks'])
+    
+    # Transform 'scores' to a numpy array
+    if 'scores' in entry:
+        transformed_entry['scores'] = np.array(entry['scores'])
+    
+    # Transform 'color' to a numpy array
+    if 'color' in entry:
+        transformed_entry['color'] = entry['color']
+    
+    return transformed_entry
+
+def loadPoint (filePath: str):
+    
+    results = []
+    with open(filePath, 'r') as file:
+        data = json.load(file)
+
+    for entry in data:
+        td = transform_property(entry)
+        r = GazeResultContainer( td['pitch'], td['yaw'], td['bboxes'], td['landmarks'], td['scores'], td['color'] )
+        results.append(r)
+
+    return results
 
 def yaw_pitch_to_vector(yaw, pitch):
     x = math.cos(yaw) * math.cos(pitch)

@@ -1,5 +1,5 @@
 from .utils import select_device, natural_keys, gazeto3d, angular, getArch
-from .vis import draw_gaze, render
+from .vis import draw_gaze, render, savePoint, loadPoint
 from .model import L2CS
 from .pipeline import Pipeline
 from .datasets import Gaze360, Mpiigaze
@@ -12,6 +12,8 @@ __all__ = [
     'Mpiigaze',
     # Utils
     'render',
+    'savePoint',
+    'loadPoint',
     'select_device',
     'draw_gaze',
     'natural_keys',

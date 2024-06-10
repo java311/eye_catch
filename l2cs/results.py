@@ -29,4 +29,4 @@ class GazeResultContainer:
             'scores': convert_to_list(self.scores),
             'color': convert_to_list(self.color)
         }
-        return json.dumps(data)
+        return data

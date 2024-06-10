@@ -16,7 +16,7 @@ from PIL import Image, ImageOps
 
 from face_detection import RetinaFace
 
-from l2cs import select_device, draw_gaze, getArch, Pipeline, render
+from l2cs import select_device, draw_gaze, getArch, savePoint, Pipeline, render, loadPoint
 
 CWD = pathlib.Path.cwd()
 
@@ -55,12 +55,14 @@ if __name__ == '__main__':
     )
      
     # cam = "D:\\tmp\\chuou_rinkan_videos\\station_entrance.mp4"
+    cam = "D:\\faceswap\\micro_cherry.mp4"
     cap = cv2.VideoCapture(cam)
 
     # Check if the webcam is opened correctly
     if not cap.isOpened():
         raise IOError("Cannot open webcam")
 
+    count = 0
     with torch.no_grad():
         while True:
 
@@ -69,15 +71,23 @@ if __name__ == '__main__':
             start_fps = time.time()  
 
             if not success:
-                print("Failed to obtain frame")
+                print("Finish processing")
                 time.sleep(0.1)
+                break
+            else:
+                print("Processing frame:" + str(count))
+                count = count + 1
 
             # Process frame
             results = gaze_pipeline.step(frame)
 
             # Visualize output
-            frame = render(frame, results, "l2cs_tmp.json") 
-            # frame = render(frame, results) 
+            # save_frame(frame, results, "l2cs_tmp.json") 
+            # frame = render(frame, results, "l2cs_tmp.json") 
+            frame = savePoint(frame, results, "l2cs_tmp.json")
+            results = None
+            results = loadPoint("l2cs_tmp.json")
+            frame = render(frame, results[-1]) 
             # frame = renderPoint(frame, results)
            
             myFPS = 1.0 / (time.time() - start_fps)
