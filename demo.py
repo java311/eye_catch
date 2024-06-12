@@ -3,6 +3,7 @@ import pathlib
 import numpy as np
 import cv2
 import time
+import os
 
 import torch
 import torch.nn as nn
@@ -61,6 +62,10 @@ if __name__ == '__main__':
     # Check if the webcam is opened correctly
     if not cap.isOpened():
         raise IOError("Cannot open webcam")
+    
+    # remove temporal save file
+    if os.path.isfile("l2cs_tmp.json"):
+        os.remove("l2cs_tmp.json")
 
     count = 0
     with torch.no_grad():
