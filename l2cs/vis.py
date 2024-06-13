@@ -223,7 +223,7 @@ def renderPoint(frame: np.ndarray, results: GazeResultContainer):
         # THIS CODE WORKS DO NOT DELETE IT !!!!!!!!!!!
 
         dv = yaw_pitch_to_vector(results.yaw[i], results.pitch[i])
-        print (dv)
+        # print (dv)
 
         # screen = [ Vec3(-1, -1, 0), Vec3(-1, 1, 0), Vec3(1, -1, 0),
         #          Vec3(1, 1, 0), Vec3(1, -1, 0), Vec3(-1, 1, 0)]
@@ -252,11 +252,11 @@ def renderPoint(frame: np.ndarray, results: GazeResultContainer):
                                       screen[5])
 
         if t >= 0: 
-            print ("hit") 
+            # print ("hit") 
             playBeep()     
             results.color[i] = (0,255,0) 
         if t2 >= 0: 
-            print ("hit")
+            # print ("hit")
             playBeep()
             results.color[i] = (0,255,0)
         # print (math.degrees(results.yaw[i]),math.degrees(results.pitch[i]))

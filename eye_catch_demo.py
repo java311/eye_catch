@@ -50,11 +50,14 @@ def get_local_video_info(vid_uri):
 
 def get_parser():
     parser = argparse.ArgumentParser(description="PyTorch MiVOLO Inference")
-    parser.add_argument("--input", type=str, default=None, required=True, help="image file or folder with images")
-    parser.add_argument("--output", type=str, default=None, required=True, help="folder for output results")
-    parser.add_argument("--detector-weights", type=str, default=None, required=True, help="Detector weights (YOLOv8).")
-    parser.add_argument("--checkpoint", default="", type=str, required=True, help="path to mivolo checkpoint")
-
+    parser.add_argument("--input", type=str, help="image file or folder with images", 
+                        default="D:\\faceswap\\micro_cherry.mp4")
+    parser.add_argument("--output", type=str, help="folder for output results",
+                        default="D:\\faceswap\\pinchi.mp4" )
+    parser.add_argument("--detector-weights", type=str, help="Detector weights (YOLOv8).",
+                        default="D:\\tmp\\eye_catch\\MiVOLO\\models\\yolov8x_person_face.pt")
+    parser.add_argument("--checkpoint", type=str, help="path to mivolo checkpoint",
+                        default="D:\\tmp\\eye_catch\\MiVOLO\\models\\model_imdb_cross_person_4.22_99.46.pth.tar")
     parser.add_argument(
         "--with-persons", action="store_true", default=False, help="If set model will run with persons, if available"
     )
@@ -62,7 +65,7 @@ def get_parser():
         "--disable-faces", action="store_true", default=False, help="If set model will use only persons if available"
     )
 
-    parser.add_argument("--draw", action="store_true", default=False, help="If set, resulted images will be drawn")
+    parser.add_argument("--draw", action="store_true", default=True, help="If set, resulted images will be drawn")
     parser.add_argument("--device", default="cuda", type=str, help="Device (accelerator) to use.")
 
     return parser
@@ -88,26 +91,21 @@ def process_eye_gaze(cap):
             start_fps = time.time()  
 
             if not success:
-                print("Finish processing")
+                _logger.info("Finish processing")
                 time.sleep(0.1)
                 break
             else:
-                print("Processing frame:" + str(count) + " of:"+ str(length) + " " + str((count*length)/100.0) + "%")
+                # print("Processing frame:" + str(count) + " of:"+ str(length) + " " + str((count*length)/100.0) + "%")
+                _logger.info(f"Processing frame: {count} of {length} {((count*100.0)/length) } %")
                 count = count + 1
 
             # Process frame
             results = gaze_pipeline.step(frame)
 
-            # Visualize output
-            # save_frame(frame, results, "l2cs_tmp.json") 
-            # frame = render(frame, results, "l2cs_tmp.json") 
+            # save the prediction results into a temp json file
             savePoint(frame, results, "l2cs_tmp.json")
-            
-            # results = None
-            # results = loadPoint("l2cs_tmp.json")
-            # frame = render(frame, results[-1]) 
-            # frame = renderPoint(frame, results)
            
+            # Visualize output
             # myFPS = 1.0 / (time.time() - start_fps)
             # cv2.putText(frame, 'FPS: {:.1f}'.format(myFPS), (10, 20),cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (0, 255, 0), 1, cv2.LINE_AA)
 
@@ -116,7 +114,8 @@ def process_eye_gaze(cap):
             #     break
             # success,frame = cap.read()
 
-        print("l2CS Finished")
+        # print("l2CS Finished")
+        _logger.info("l2CS Finished")
 
 # render the l2cs-net json results into a new xvid video file
 def render_eye_gaze(minovo_output_path, final_filepath):
@@ -180,8 +179,10 @@ def main():
                 out.write(frame)
 
         #l2cs predictor and save results on file
-        # cap, res, fps = get_local_video_info(args.input)
-        # process_eye_gaze(cap)
+        cap, res, fps = get_local_video_info(args.input)
+        process_eye_gaze(cap)
+
+        # render the l2cs over MiVolo output video
         bname = os.path.splitext(os.path.basename(args.input))[0]
         outfilename = os.path.join(args.output, f"out_{bname}.avi")
         final_filename = os.path.join(args.output, f"final_{bname}.avi")
