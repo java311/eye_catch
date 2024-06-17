@@ -255,14 +255,14 @@ def main():
                 out.write(frame)
 
         #l2cs predictor and save results on file
-        # cap, res, fps = get_local_video_info(args.input)
-        # process_eye_gaze(cap)
+        cap, res, fps = get_local_video_info(args.input)
+        process_eye_gaze(cap)
 
         # render the l2cs over MiVolo output video
         bname = os.path.splitext(os.path.basename(args.input))[0]
         outfilename = os.path.join(args.output, f"out_{bname}.avi")
         final_filename = os.path.join(args.output, f"final_{bname}.avi")
-        # render_eye_gaze(outfilename, final_filename)
+        render_eye_gaze(outfilename, final_filename)
         create_time_graph(outfilename, detected_objects_history, loadPoint("l2cs_tmp.json"))
 
     elif input_type == InputType.Image:
