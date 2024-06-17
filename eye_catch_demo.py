@@ -186,41 +186,33 @@ def create_time_graph(minovo_output_path, mivolo_results, l2cs_results):
                 timestamps[v_index].append( start_time + datetime.timedelta(seconds=ts) )
             v_index = v_index +1
 
-    fig = make_subplots(rows=1, cols=n_faces)
-    for i in range(n_faces):
-        fig.add_trace(go.Scatter(
-            name="Face #" + str(i),
-            mode="markers", x=timestamps[i], y=vis_list[i],
-            marker_symbol= symbols[i % symbols_len], marker_size=10
-        ), row=1, col=i+1)
-    # fig.write_image("fig_01.png")
-
-    fig.update_xaxes(showgrid=True, ticklabelmode="period")
-    fig.show()
-
-    pint = 0
-    fn = 0
     fig = make_subplots(rows=1, cols=len(mivolo_results))
+    pers = []
     for person in mivolo_results:
         age = list(zip(*mivolo_results[person]))[0]
         sex = list(zip(*mivolo_results[person]))[1]
 
         avg_age = sum(age) / len(age) 
+        avg_sex = max(set(sex), key=sex.count)
         _logger.info(str(person) + " avg age:" + str(avg_age))
 
-        n_frames = list(range(0, len(mivolo_results[person])))
-
-        fig.add_trace(go.Scatter(
-                name="Person #" + str(person) + ":" + str(sex[0]),
-                mode="markers", x=n_frames, y=age,
-                marker_symbol= symbols[i % symbols_len] , marker_size=10
-            ), row=1, col=pint+1)
-        pint = pint + 1
-    # fig.write_image("fig_02.png")
+        pers.append([person, avg_sex, avg_age])
         
 
+    fig = make_subplots(rows=1, cols=n_faces)
+    for i in range(n_faces):
+        label = "Person #" + str(i)
+        if (i < len(pers)):
+            label = str(pers[i][1]) + " Age:" +  str(int(pers[i][2]))
+
+        fig.add_trace(go.Scatter(
+            name= label,
+            mode="markers", x=timestamps[i], y=vis_list[i],
+            marker_symbol= symbols[i % symbols_len], marker_size=10
+        ), row=1, col=i+1)
     fig.update_xaxes(showgrid=True, ticklabelmode="period")
     fig.show()
+
     return
 
 
