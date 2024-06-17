@@ -5,6 +5,9 @@ import torch
 import cv2
 import logging
 import yt_dlp
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+import pandas as pd
 
 from mivolo.data.data_reader import InputType, get_all_files, get_input_type
 from mivolo.predictor import Predictor
@@ -14,6 +17,7 @@ _logger = logging.getLogger("inference")
 # l2cs-net imports 
 import time 
 import pathlib
+import datetime
 
 from PIL import Image
 from PIL import Image, ImageOps
@@ -59,10 +63,10 @@ def get_parser():
     parser.add_argument("--checkpoint", type=str, help="path to mivolo checkpoint",
                         default="D:\\tmp\\eye_catch\\MiVOLO\\models\\model_imdb_cross_person_4.22_99.46.pth.tar")
     parser.add_argument(
-        "--with-persons", action="store_true", default=False, help="If set model will run with persons, if available"
+        "--with-persons", action="store_true", default=True, help="If set model will run with persons, if available"
     )
     parser.add_argument(
-        "--disable-faces", action="store_true", default=False, help="If set model will use only persons if available"
+        "--disable-faces", action="store_true", default=True, help="If set model will use only persons if available"
     )
 
     parser.add_argument("--draw", action="store_true", default=True, help="If set, resulted images will be drawn")
@@ -102,6 +106,8 @@ def process_eye_gaze(cap):
             # Process frame
             results = gaze_pipeline.step(frame)
 
+            frame = render(frame, results) 
+
             # save the prediction results into a temp json file
             savePoint(frame, results, "l2cs_tmp.json")
            
@@ -128,10 +134,15 @@ def render_eye_gaze(minovo_output_path, final_filepath):
     fourcc = cv2.VideoWriter_fourcc(*"XVID")
     out = cv2.VideoWriter(final_filepath, fourcc, fps, res)
 
-    count = 0
     results = loadPoint("l2cs_tmp.json")
+    count = 0
+    len_res = len(results)
     while True:
-        success, frame = cap.read()    
+        success, frame = cap.read()  
+
+        if (not success or count >= len_res):
+            break
+
         frame = render(frame, results[count])
         count = count + 1
         
@@ -139,6 +150,79 @@ def render_eye_gaze(minovo_output_path, final_filepath):
         cv2.imshow("Final Render",frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
+    return
+
+def create_time_graph(minovo_output_path, mivolo_results, l2cs_results):
+
+    symbols= ['circle', 'square', 'star', 'triangle', 'circle']
+    symbols_len = len(symbols)
+    cap = cv2.VideoCapture(minovo_output_path)
+    fps = cap.get(cv2.CAP_PROP_FPS)
+    start_time = datetime.datetime.now()
+    
+    n_faces = 0
+    for l2cs_res in l2cs_results:
+
+        if l2cs_res.color == []:
+            continue
+
+        n_faces = max(len(l2cs_res.color), n_faces)
+
+    vis_list = [[] for _ in range(n_faces)]
+    timestamps = [[] for _ in range(n_faces)]
+
+    fn = 0
+    for l2cs_res in l2cs_results:
+        v_index = 0
+        fn = fn +1
+        ts = (fn/fps)
+
+        for c in l2cs_res.color:
+            if c[1] == 255:
+                vis_list[v_index].append(1)
+                timestamps[v_index].append( start_time + datetime.timedelta(seconds=ts) )
+            else:
+                vis_list[v_index].append(-1)
+                timestamps[v_index].append( start_time + datetime.timedelta(seconds=ts) )
+            v_index = v_index +1
+
+    fig = make_subplots(rows=1, cols=n_faces)
+    for i in range(n_faces):
+        fig.add_trace(go.Scatter(
+            name="Face #" + str(i),
+            mode="markers", x=timestamps[i], y=vis_list[i],
+            marker_symbol= symbols[i % symbols_len], marker_size=10
+        ), row=1, col=i+1)
+    # fig.write_image("fig_01.png")
+
+    fig.update_xaxes(showgrid=True, ticklabelmode="period")
+    fig.show()
+
+    pint = 0
+    fn = 0
+    fig = make_subplots(rows=1, cols=len(mivolo_results))
+    for person in mivolo_results:
+        age = list(zip(*mivolo_results[person]))[0]
+        sex = list(zip(*mivolo_results[person]))[1]
+
+        avg_age = sum(age) / len(age) 
+        _logger.info(str(person) + " avg age:" + str(avg_age))
+
+        n_frames = list(range(0, len(mivolo_results[person])))
+
+        fig.add_trace(go.Scatter(
+                name="Person #" + str(person) + ":" + str(sex[0]),
+                mode="markers", x=n_frames, y=age,
+                marker_symbol= symbols[i % symbols_len] , marker_size=10
+            ), row=1, col=pint+1)
+        pint = pint + 1
+    # fig.write_image("fig_02.png")
+        
+
+    fig.update_xaxes(showgrid=True, ticklabelmode="period")
+    fig.show()
+    return
+
 
 def main():
     parser = get_parser()
@@ -179,14 +263,15 @@ def main():
                 out.write(frame)
 
         #l2cs predictor and save results on file
-        cap, res, fps = get_local_video_info(args.input)
-        process_eye_gaze(cap)
+        # cap, res, fps = get_local_video_info(args.input)
+        # process_eye_gaze(cap)
 
         # render the l2cs over MiVolo output video
         bname = os.path.splitext(os.path.basename(args.input))[0]
         outfilename = os.path.join(args.output, f"out_{bname}.avi")
         final_filename = os.path.join(args.output, f"final_{bname}.avi")
-        render_eye_gaze(outfilename, final_filename)
+        # render_eye_gaze(outfilename, final_filename)
+        create_time_graph(outfilename, detected_objects_history, loadPoint("l2cs_tmp.json"))
 
     elif input_type == InputType.Image:
         image_files = get_all_files(args.input) if os.path.isdir(args.input) else [args.input]

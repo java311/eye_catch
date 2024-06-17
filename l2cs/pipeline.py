@@ -86,7 +86,7 @@ class Pipeline:
                     bboxes.append(box)
                     landmarks.append(landmark)
                     scores.append(score)
-                    color.append( (0,255,0) )
+                    color.append( (255,0,0) )
 
                 # Predict gaze
                 # print(str(int(face_imgs["x"] - face_imgs["width"] / 2)))

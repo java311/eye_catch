@@ -251,14 +251,13 @@ def renderPoint(frame: np.ndarray, results: GazeResultContainer):
                                       screen[4],
                                       screen[5])
 
-        if t >= 0: 
+
+        results.color[i] = (255,0,0)
+        if t >= 0 or t2 >= 0: 
             # print ("hit") 
             playBeep()     
             results.color[i] = (0,255,0) 
-        if t2 >= 0: 
-            # print ("hit")
-            playBeep()
-            results.color[i] = (0,255,0)
+        
         # print (math.degrees(results.yaw[i]),math.degrees(results.pitch[i]))
         # frame = draw_vector(frame, results.yaw[i], results.pitch[i])
         # frame = render_3d_vector(frame, [int(image_width/2),int(image_height/2),0], dv, 50)
