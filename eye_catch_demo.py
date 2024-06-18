@@ -55,9 +55,9 @@ def get_local_video_info(vid_uri):
 def get_parser():
     parser = argparse.ArgumentParser(description="PyTorch MiVOLO Inference")
     parser.add_argument("--input", type=str, help="image file or folder with images", 
-                        default="D:\\faceswap\\micro_cherry.mp4")
+                        default="D:\\tmp\\fw\\fw_cut.mp4")
     parser.add_argument("--output", type=str, help="folder for output results",
-                        default="D:\\faceswap\\pinchi.mp4" )
+                        default="D:\\tmp\\fw\\pinchi.mp4" )
     parser.add_argument("--detector-weights", type=str, help="Detector weights (YOLOv8).",
                         default="D:\\tmp\\eye_catch\\MiVOLO\\models\\yolov8x_person_face.pt")
     parser.add_argument("--checkpoint", type=str, help="path to mivolo checkpoint",
@@ -154,7 +154,7 @@ def render_eye_gaze(minovo_output_path, final_filepath):
 
 def create_time_graph(minovo_output_path, mivolo_results, l2cs_results):
 
-    symbols= ['circle', 'square', 'star', 'triangle', 'circle']
+    symbols= ['circle', 'square', 'star', 'hexagon2', 'star-diamond']
     symbols_len = len(symbols)
     cap = cv2.VideoCapture(minovo_output_path)
     fps = cap.get(cv2.CAP_PROP_FPS)
@@ -182,7 +182,7 @@ def create_time_graph(minovo_output_path, mivolo_results, l2cs_results):
                 vis_list[v_index].append(1)
                 timestamps[v_index].append( start_time + datetime.timedelta(seconds=ts) )
             else:
-                vis_list[v_index].append(-1)
+                vis_list[v_index].append(0)
                 timestamps[v_index].append( start_time + datetime.timedelta(seconds=ts) )
             v_index = v_index +1
 
