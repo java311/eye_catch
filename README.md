@@ -29,3 +29,10 @@ python demo.py
 ## Debug
 How to set vscode python debug to use conda environment:
 https://stackoverflow.com/questions/63411583/how-do-i-activate-my-conda-environment-for-vs-code-python-debugger-and-testing
+
+### TODO
+- Add person tracking/id 
+- Better match between l2cs and minovo results
+- migrate to collab
+- save fig into files
+- Recheck performance (it is to slow...)
